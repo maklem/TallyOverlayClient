@@ -9,6 +9,11 @@ warn_return_any = true
 strict = true
 files = "**/*.py"
 
+[[tool.mypy.overrides]]
+module = ["async_tkinter_loop.*"]
+follow_untyped_imports = true
+implicit_reexport = true
+
 [tool.flake8]
 max-line-length = 120
 ignore = ["E225", ]
