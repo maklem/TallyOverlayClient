@@ -28,4 +28,4 @@ jobs:
     - name: tox -- static code analysis
       run: tox r -e static_analysis
     - name: tox -- run tests
-      run: tox r --skip-env "(static_analysis|py312-linting)
+      run: tox r --skip-env "(static_analysis|py312-linting)"
