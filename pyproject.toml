@@ -1,0 +1,14 @@
+[project]
+name = "TallyOverlayClient"
+description = "Device State Overlay on Windows for TallyArbiter"
+version = "0.0.0"
+readme = "README.md"
+
+[tool.mypy]
+warn_return_any = true
+strict = true
+files = "**/*.py"
+
+[tool.flake8]
+max-line-length = 120
+ignore = ["E225", ]
