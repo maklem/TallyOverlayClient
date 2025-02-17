@@ -1,18 +1,11 @@
-from enum import Enum
 import tkinter as tk
 from tkinter import ttk
 
-
-class OverlayState(Enum):
-    PROGRAM = "overlay.program.TFrame"
-    PREVIEW = "overlay.preview.TFrame"
-    AUX = "overlay.aux.TFrame"
-    OFFLINE = "overlay.offline.TFrame"
+from tallyoverlayclient.models import TallyState
 
 
-class OverlayFrame():
+class OverlayWindow():
     def __init__(self, root: tk.Tk):
-
         self.style = ttk.Style()
         self.style.configure("overlay.program.TFrame", background="red")
         self.style.configure("overlay.preview.TFrame", background="green")
@@ -26,7 +19,7 @@ class OverlayFrame():
         self.overlay.grid()
         self.overlay.grid_columnconfigure(0, weight=1)
         self.overlay.grid_rowconfigure(0, weight=1)
-        self.frame = ttk.Frame(self.overlay, padding=5, borderwidth=2, style=OverlayState.AUX.value)
+        self.frame = ttk.Frame(self.overlay, padding=2, style=TallyState.AUX.value)
         self.frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid_rowconfigure(0, weight=1)
@@ -34,5 +27,5 @@ class OverlayFrame():
         self.label.configure(background="purple")
         self.label.grid(row=0, column=0, sticky=tk.NSEW)
 
-    def setStatus(self, state: OverlayState) -> None:
+    def setStatus(self, state: TallyState) -> None:
         self.frame.configure(style=state.value)

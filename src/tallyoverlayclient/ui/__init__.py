@@ -1,8 +1,7 @@
 from .ConfigurationFrame import ConfigFrame
-from .OverlayFrame import OverlayFrame, OverlayState
+from .OverlayFrame import OverlayWindow
 
 __all__ = [
     "ConfigFrame",
-    "OverlayFrame",
-    "OverlayState",
+    "OverlayWindow",
 ]
