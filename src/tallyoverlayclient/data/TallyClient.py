@@ -8,15 +8,27 @@ from tallyoverlayclient.models import TallyState, Configuration
 class TallyClient:
     def __init__(
         self,
-        onStateChange: Optional[Callable[[TallyState], None]] = None
+        onStateChange: Optional[Callable[[TallyState], None]] = None,
+        onDevicesChanged: Optional[Callable[[dict[str, Any]], None]] = None,
+        onConnected: Optional[Callable[[], None]] = None,
+        onDisconnected: Optional[Callable[[], None]] = None,
     ):
         self.config = Configuration("", 0, "")
+        self.devices: list[dict[str, Any]] = []
         self.bus_options: list[dict[str, Any]] = []
         self.onStateChange = onStateChange
+        self.onConnected = onConnected
+        self.onDisconnected = onDisconnected
+        self.onDevicesChanged = onDevicesChanged
         self.client = socketio.AsyncClient()
 
-        @self.client.on('connect')
-        async def onConnected() -> None:
+        @self.client.event
+        async def connect() -> None:
+            if self.onConnected is not None:
+                self.onConnected()
+
+        async def attach_to_device(device_id: str) -> None:
+            self.config.device_id = device_id
             await self.client.emit(
                 "listenerclient_connect",
                 {
@@ -27,6 +39,20 @@ class TallyClient:
                     "supportsChat": False,
                 },
             )
+
+        @self.client.event
+        async def connect_error(data: str) -> None:
+            if self.onDisconnected is not None:
+                self.onDisconnected()
+
+        @self.client.event
+        async def disconnect(reason: str) -> None:
+            if self.onDisconnected is not None:
+                self.onDisconnected()
+
+        @self.client.on('devices')
+        async def onDevices(data: list[dict[str, Any]]) -> None:
+            self.devices = data
 
         @self.client.on('bus_options')
         async def onBusOptions(data: list[dict[str, Any]]) -> None:
@@ -66,4 +92,8 @@ class TallyClient:
 
         self.config = config
         url = f"http://{config.tally_ip}:{config.tally_port}/"
-        await self.client.connect(url)
+        try:
+            await self.client.connect(url)
+        except socketio.exceptions.ConnectionError:
+            # event connect_error is emitted implicitly
+            pass
