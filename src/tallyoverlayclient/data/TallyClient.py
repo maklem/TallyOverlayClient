@@ -9,7 +9,7 @@ class TallyClient:
     def __init__(
         self,
         onStateChange: Optional[Callable[[TallyState], None]] = None,
-        onDevicesChanged: Optional[Callable[[dict[str, Any]], None]] = None,
+        onDevicesChanged: Optional[Callable[[list[dict[str, Any]]], None]] = None,
         onConnected: Optional[Callable[[], None]] = None,
         onDisconnected: Optional[Callable[[], None]] = None,
     ):
@@ -26,19 +26,7 @@ class TallyClient:
         async def connect() -> None:
             if self.onConnected is not None:
                 self.onConnected()
-
-        async def attach_to_device(device_id: str) -> None:
-            self.config.device_id = device_id
-            await self.client.emit(
-                "listenerclient_connect",
-                {
-                    "deviceId": self.config.device_id,
-                    "listenerType": "TallyOverlayClient",
-                    "canBeReassigned": False,
-                    "canBeFlashed": False,
-                    "supportsChat": False,
-                },
-            )
+            await self.client.emit("devices")
 
         @self.client.event
         async def connect_error(data: str) -> None:
@@ -53,11 +41,13 @@ class TallyClient:
         @self.client.on('devices')
         async def onDevices(data: list[dict[str, Any]]) -> None:
             self.devices = data
+            print(data)
+            if self.onDevicesChanged is not None:
+                self.onDevicesChanged(self.devices)
 
         @self.client.on('bus_options')
         async def onBusOptions(data: list[dict[str, Any]]) -> None:
             self.bus_options = data
-            print(data)
 
         @self.client.on('device_states')
         async def onDeviceStates(data: list[dict[str, Any]]) -> None:
@@ -97,3 +87,16 @@ class TallyClient:
         except socketio.exceptions.ConnectionError:
             # event connect_error is emitted implicitly
             pass
+
+    async def attach_to_device(self, device_id: str) -> None:
+        self.config.device_id = device_id
+        await self.client.emit(
+            "listenerclient_connect",
+            {
+                "deviceId": self.config.device_id,
+                "listenerType": "TallyOverlayClient",
+                "canBeReassigned": False,
+                "canBeFlashed": False,
+                "supportsChat": False,
+            },
+        )

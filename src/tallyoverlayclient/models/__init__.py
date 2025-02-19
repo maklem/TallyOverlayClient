@@ -1,6 +1,6 @@
 from .Config import Configuration
 from .TallyState import TallyState
 from .AppStage import AppStage
-from .AppStageVar import AppStageVar
+from .Property import Property
 
-__all__ = ["Configuration", "TallyState", "AppStage", "AppStageVar"]
+__all__ = ["Configuration", "TallyDevice", "TallyState", "AppStage", "Property"]
