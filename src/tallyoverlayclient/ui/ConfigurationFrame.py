@@ -22,17 +22,23 @@ class ConfigFrame():
         if self._parentOnQuit is not None:
             self._parentOnQuit()
 
+    def _onHide(self) -> None:
+        if self._parentOnHide is not None:
+            self._parentOnHide()
+
     def __init__(
         self,
         root: tk.Tk,
         onSave: Optional[Callable[[], None]] = None,
         onConnect: Optional[Callable[[], None]] = None,
         onAttach: Optional[Callable[[], None]] = None,
+        onHide: Optional[Callable[[], None]] = None,
         onQuit: Optional[Callable[[], None]] = None,
         server: Property[str] = Property[str](value="localhost"),
         port: Property[int] = Property[int](value=4455),
         devices: Property[list[str]] = Property(value=[]),
         device_id: Property[str] = Property[str](value=""),
+        autoconnect: Property[bool] = Property[bool](value=False),
         appstage: Property[AppStage] = Property[AppStage](value=AppStage.DISCONNECTED),
     ):
         @appstage.on_change
@@ -52,10 +58,12 @@ class ConfigFrame():
         self._parentOnConnect = onConnect
         self._parentOnAttach = onAttach
         self._parentOnQuit = onQuit
+        self._parentOnHide = onHide
 
         self._tally_server = server.bind_to_tkinter(tk.StringVar(self._parent))
         self._tally_port = port.bind_to_tkinter(tk.IntVar(self._parent))
         self._tally_deviceid = device_id.bind_to_tkinter(tk.StringVar(self._parent))
+        self._tally_autoconnect = autoconnect.bind_to_tkinter(tk.BooleanVar(self._parent))
         self._tally_devices = devices.get()
 
         root.grid()
@@ -104,7 +112,21 @@ class ConfigFrame():
             .grid(column=1, row=row, sticky=tk.EW)
         row+=1
 
-        ttk.Button(self._frame, text="Save", command=self._onSave).grid(column=1, row=row, sticky=tk.EW)
+        storage_controls_state = "normal" if self._stage.get() == AppStage.LISTENING else "disabled"
+
+        ttk.Checkbutton(self._frame,
+                        text="autoconnect",
+                        variable=self._tally_autoconnect,
+                        state=storage_controls_state)\
+            .grid(column=1, row=row, sticky=tk.EW)
+        row+=1
+
+        ttk.Button(self._frame, text="Save", command=self._onSave, state=storage_controls_state)\
+            .grid(column=1, row=row, sticky=tk.EW)
+        row+=1
+
+        ttk.Button(self._frame, text="Listening... - Hide?", command=self._onHide, state=storage_controls_state)\
+            .grid(column=1, row=row, sticky=tk.EW)
         row+=1
 
         ttk.Button(self._frame, text="Quit", command=self._onQuit).grid(column=1, row=row, sticky=tk.EW)

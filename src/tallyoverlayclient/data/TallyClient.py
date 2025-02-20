@@ -2,7 +2,7 @@ from typing import Optional, Callable, Any
 
 import socketio
 
-from tallyoverlayclient.models import TallyState, Configuration
+from tallyoverlayclient.models import TallyState
 
 
 class TallyClient:
@@ -13,7 +13,6 @@ class TallyClient:
         onConnected: Optional[Callable[[], None]] = None,
         onDisconnected: Optional[Callable[[], None]] = None,
     ):
-        self.config = Configuration("", 0, "")
         self.devices: list[dict[str, Any]] = []
         self.bus_options: list[dict[str, Any]] = []
         self.onStateChange = onStateChange
@@ -76,12 +75,11 @@ class TallyClient:
                 case _:
                     self.onStateChange(TallyState.OFFLINE)
 
-    async def connect(self, config: Configuration) -> None:
+    async def connect(self, hostname: str, port: int) -> None:
         if self.client.connected:
             raise Exception("Already connected!")
 
-        self.config = config
-        url = f"http://{config.tally_ip}:{config.tally_port}/"
+        url = f"http://{hostname}:{port}/"
         try:
             await self.client.connect(url)
         except socketio.exceptions.ConnectionError:
@@ -89,11 +87,10 @@ class TallyClient:
             pass
 
     async def attach_to_device(self, device_id: str) -> None:
-        self.config.device_id = device_id
         await self.client.emit(
             "listenerclient_connect",
             {
-                "deviceId": self.config.device_id,
+                "deviceId": device_id,
                 "listenerType": "TallyOverlayClient",
                 "canBeReassigned": False,
                 "canBeFlashed": False,

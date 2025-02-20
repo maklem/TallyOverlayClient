@@ -7,6 +7,7 @@ class Configuration:
     tally_ip: str
     tally_port: int
     device_id: str
+    autoconnect: bool
 
     def to_json(self) -> str:
         return json.dumps(asdict(self))

@@ -11,10 +11,15 @@ from tallyoverlayclient.models import Configuration, TallyState, AppStage, Prope
 from tallyoverlayclient.data import TallyClient
 
 CONFIG_FILENAME = "config.json"
+may_autoconnect = True
 
 
 def onTallyConnected() -> None:
     tally_connection.set(AppStage.CONNECTED)
+
+    if tally_autoconnect.get() and may_autoconnect:
+        attach()
+        hide()
 
 
 def onDevicesChanged(devices: list[dict[str, Any]]) -> None:
@@ -28,13 +33,16 @@ def onStateChanged(state: TallyState) -> None:
 
 def onTallyDisconnected() -> None:
     tally_connection.set(AppStage.DISCONNECTED)
+    global may_autoconnect
+    may_autoconnect = False
 
 
 def save() -> None:
     config = Configuration(
         tally_ip=tally_hostname.get(),
         tally_port=tally_port.get(),
-        device_id=tally_deviceid.get()
+        device_id=tally_deviceid.get(),
+        autoconnect=tally_autoconnect.get(),
     )
 
     with open(CONFIG_FILENAME, "w") as f:
@@ -50,12 +58,11 @@ def attach() -> None:
 
 def connect() -> None:
     tally_connection.set(AppStage.CONNECTING)
-    config = Configuration(
-        tally_ip=tally_hostname.get(),
-        tally_port=tally_port.get(),
-        device_id=""
-    )
-    asyncio.create_task(tallyClient.connect(config))
+    asyncio.create_task(tallyClient.connect(hostname=tally_hostname.get(), port=tally_port.get()))
+
+
+def hide() -> None:
+    root.iconify()
 
 
 tallyClient = TallyClient(
@@ -66,6 +73,7 @@ tallyClient = TallyClient(
 )
 
 root = tkinter.Tk()
+tally_autoconnect = Property[bool](value=False)
 tally_connection = Property[AppStage](value=AppStage.DISCONNECTED)
 tally_hostname = Property[str](value="localhost")
 tally_port = Property[int](value=4455)
@@ -77,11 +85,13 @@ configWindow = ui.ConfigFrame(
     onSave=save,
     onConnect=connect,
     onAttach=attach,
+    onHide=hide,
     onQuit=root.destroy,
     server=tally_hostname,
     port=tally_port,
     devices=tally_devices,
     device_id=tally_deviceid,
+    autoconnect=tally_autoconnect,
     appstage=tally_connection,
 )
 overlay = ui.OverlayWindow(root)
@@ -92,7 +102,11 @@ if os.path.isfile(CONFIG_FILENAME):
         tally_hostname.set(config.tally_ip)
         tally_port.set(config.tally_port)
         tally_deviceid.set(config.device_id)
+        tally_autoconnect.set(config.autoconnect)
 
+
+if tally_autoconnect.get():
+    root.after(0, connect)
 
 root.focus_force()
 async_mainloop(root)
