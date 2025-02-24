@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from typing import Any
 
 from tallyoverlayclient.models import ConnectionState
 from .ConfigFrameViewModel import ConfigFrameViewModel
@@ -53,12 +54,11 @@ class ConfigFrame():
 
         self._build_contents()
 
-
-    def _on_tk_map(self, _):
+    def _on_tk_map(self, _: tk.Event[Any]) -> None:
         self._visible = True
         self._view_model.visible.set(True)
 
-    def _on_tk_unmap(self, _):
+    def _on_tk_unmap(self, _: tk.Event[Any]) -> None:
         self._visible = False
         self._view_model.visible.set(False)
 

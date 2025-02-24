@@ -66,7 +66,7 @@ class MainApp:
 
     def onHide(self) -> None:
         self._model.visible.set(False)
-    
+
     def onQuit(self) -> None:
         self._root.destroy()
 
