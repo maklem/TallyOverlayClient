@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class AppStage(Enum):
+class ConnectionState(Enum):
     DISCONNECTED = "disconnected",
     CONNECTING = "connecting",
     CONNECTED = "connected",

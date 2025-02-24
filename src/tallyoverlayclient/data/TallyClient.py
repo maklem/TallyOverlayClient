@@ -1,5 +1,5 @@
 from typing import Optional, Callable, Any
-
+import asyncio
 import socketio
 
 from tallyoverlayclient.models import TallyState
@@ -21,59 +21,60 @@ class TallyClient:
         self.onDevicesChanged = onDevicesChanged
         self.client = socketio.AsyncClient()
 
-        @self.client.event
-        async def connect() -> None:
-            if self.onConnected is not None:
-                self.onConnected()
-            await self.client.emit("devices")
+        self.client.on('connect', self._on_connect)
+        self.client.on('connect_error', self._on_connect_error)
+        self.client.on('disconnect', self._on_disconnect)
 
-        @self.client.event
-        async def connect_error(data: str) -> None:
-            if self.onDisconnected is not None:
-                self.onDisconnected()
+        self.client.on('bus_options', self._on_bus_options)
+        self.client.on('devices', self._on_devices)
+        self.client.on('device_states', self._on_device_states)
 
-        @self.client.event
-        async def disconnect(reason: str) -> None:
-            if self.onDisconnected is not None:
-                self.onDisconnected()
+    def _on_connect(self) -> None:
+        if self.onConnected is not None:
+            self.onConnected()
+        asyncio.create_task(self.client.emit("devices"))
 
-        @self.client.on('devices')
-        async def onDevices(data: list[dict[str, Any]]) -> None:
-            self.devices = data
-            print(data)
-            if self.onDevicesChanged is not None:
-                self.onDevicesChanged(self.devices)
+    def _on_connect_error(self, data: str) -> None:
+        if self.onDisconnected is not None:
+            self.onDisconnected()
 
-        @self.client.on('bus_options')
-        async def onBusOptions(data: list[dict[str, Any]]) -> None:
-            self.bus_options = data
+    def _on_disconnect(self, reason: str) -> None:
+        if self.onDisconnected is not None:
+            self.onDisconnected()
 
-        @self.client.on('device_states')
-        async def onDeviceStates(data: list[dict[str, Any]]) -> None:
-            if self.onStateChange is None:
-                return
+    def _on_devices(self, data: list[dict[str, Any]]) -> None:
+        self.devices = data
+        if self.onDevicesChanged is not None:
+            self.onDevicesChanged(self.devices)
 
-            active_busses = []
-            for device in data:
-                if len(device["sources"]) == 0:
-                    continue
-                bus = [bus for bus in self.bus_options if bus["id"] == device["busId"]]
-                if len(bus) == 1:
-                    active_busses.append(bus[0])
-            if len(active_busses) == 0:
+    def _on_bus_options(self, data: list[dict[str, Any]]) -> None:
+        self.bus_options = data
+
+    def _on_device_states(self, data: list[dict[str, Any]]) -> None:
+        if self.onStateChange is None:
+            return
+
+        active_busses = []
+        for device in data:
+            if len(device["sources"]) == 0:
+                continue
+            bus = [bus for bus in self.bus_options if bus["id"] == device["busId"]]
+            if len(bus) == 1:
+                active_busses.append(bus[0])
+        if len(active_busses) == 0:
+            self.onStateChange(TallyState.OFFLINE)
+            return
+
+        active_busses.sort(key=lambda x: x["priority"])
+        match active_busses[0]["type"]:
+            case "program":
+                self.onStateChange(TallyState.PROGRAM)
+            case "preview":
+                self.onStateChange(TallyState.PREVIEW)
+            case "aux":
+                self.onStateChange(TallyState.AUX)
+            case _:
                 self.onStateChange(TallyState.OFFLINE)
-                return
-
-            active_busses.sort(key=lambda x: x["priority"])
-            match active_busses[0]["type"]:
-                case "program":
-                    self.onStateChange(TallyState.PROGRAM)
-                case "preview":
-                    self.onStateChange(TallyState.PREVIEW)
-                case "aux":
-                    self.onStateChange(TallyState.AUX)
-                case _:
-                    self.onStateChange(TallyState.OFFLINE)
 
     async def connect(self, hostname: str, port: int) -> None:
         if self.client.connected:

@@ -1,6 +1,7 @@
-from .Config import Configuration
+from .AppDataModel import AppDataModel
+from .Configuration import Configuration
 from .TallyState import TallyState
-from .AppStage import AppStage
+from .ConnectionState import ConnectionState
 from .Property import Property
 
-__all__ = ["Configuration", "TallyDevice", "TallyState", "AppStage", "Property"]
+__all__ = ["AppDataModel", "Configuration", "TallyDevice", "TallyState", "ConnectionState", "Property"]

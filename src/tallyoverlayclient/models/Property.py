@@ -6,7 +6,7 @@ P = TypeVar('P', bound=Variable)
 
 
 class Property[T]:
-    def __init__(self, value: T):
+    def __init__(self, value: T) -> None:
         self._callbacks: list[Callable[[T], None]] = []
         self._value = value
 
