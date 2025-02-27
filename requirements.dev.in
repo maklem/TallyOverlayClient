@@ -5,3 +5,4 @@ mypy
 pip-tools
 pyinstaller
 pytest
+pytest-asyncio

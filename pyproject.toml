@@ -23,3 +23,6 @@ follow_untyped_imports = true
 [tool.flake8]
 max-line-length = 120
 ignore = ["E225", ]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
