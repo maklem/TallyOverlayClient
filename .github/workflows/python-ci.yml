@@ -11,15 +11,14 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.12
       uses: actions/setup-python@v3
       with:
         python-version: "3.12"
-    - name: Install dependencies
+    - name: Install tox
       run: |
         python -m pip install --upgrade pip
         pip install tox
@@ -27,8 +26,8 @@ jobs:
       run: tox r -e py312-linting
     - name: tox -- static code analysis
       run: tox r -e static_analysis
-    - name: tox -- run tests
-      run: tox r --skip-env "(static_analysis|py312-linting)"
+    - name: tox -- unittest
+      run: tox run --skip-env "(static_analysis|py312-linting)"
     - name: generate coverage report
       run: tox e -e py312-unittest -- coverage html -d coverage
     - name: upload coverage to artifacts
@@ -49,25 +48,10 @@ jobs:
       with:
         name: allure_report
         path: allure-report/index.html
-
-  assemble-pyinstaller:
-    runs-on: windows-latest
-    needs: [build]
-    
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.12"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install tox
     - name: tox -- installer
       run: tox r -e py312-pyinstaller
     - name: upload to artifacts
       uses: actions/upload-artifact@v4.6.0
       with:
-        path: dist/*
+        path: dist/main/*
         name: TallyOverlayClient
