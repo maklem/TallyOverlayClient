@@ -54,11 +54,11 @@ class ConfigFrame():
 
         self._build_contents()
 
-    def _on_tk_map(self, _: tk.Event[Any]) -> None:
+    def _on_tk_map(self, _: 'tk.Event[Any]') -> None:
         self._visible = True
         self._view_model.visible.set(True)
 
-    def _on_tk_unmap(self, _: tk.Event[Any]) -> None:
+    def _on_tk_unmap(self, _: 'tk.Event[Any]') -> None:
         self._visible = False
         self._view_model.visible.set(False)
 
