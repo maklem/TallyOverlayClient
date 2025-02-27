@@ -4,8 +4,14 @@
 #
 #    pip-compile '.\requirements.dev.in'
 #
+allure-pytest==2.13.5
+    # via -r .\requirements.dev.in
+allure-python-commons==2.13.5
+    # via allure-pytest
 altgraph==0.17.4
     # via pyinstaller
+attrs==25.1.0
+    # via allure-python-commons
 build==1.2.2.post1
     # via pip-tools
 click==8.1.8
@@ -42,7 +48,9 @@ pefile==2023.2.7
 pip-tools==7.4.1
     # via -r .\requirements.dev.in
 pluggy==1.5.0
-    # via pytest
+    # via
+    #   allure-python-commons
+    #   pytest
 pycodestyle==2.12.1
     # via flake8
 pyflakes==3.2.0
@@ -58,6 +66,7 @@ pyproject-hooks==1.2.0
 pytest==8.3.4
     # via
     #   -r .\requirements.dev.in
+    #   allure-pytest
     #   pytest-asyncio
 pytest-asyncio==0.25.3
     # via -r .\requirements.dev.in
