@@ -1,5 +1,7 @@
+allure-report
 allure-results
 build
+config.json
 .coverage
 .dev
 dist
@@ -8,3 +10,4 @@ dist
 __pycache__
 *.spec
 .tox
+.vscode

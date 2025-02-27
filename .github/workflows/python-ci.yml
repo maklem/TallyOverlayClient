@@ -36,13 +36,19 @@ jobs:
       with:
         name: coverage_report
         path: coverage/*
-    - name: generate test report
-      uses: simple-elf/allure-report-action@v1.7
+    - name: install node for allure report
+      uses: actions/setup-node@v4
+    - name: install allure commandline
+      run: npm install -g allure-commandline
+    - name: generate allure report
+      run: allure generate --clean --single-file
+      env:
+        ALLURE_NO_ANALYTICS: True
     - name: upload test report to artifacts
       uses: actions/upload-artifact@v4.6.0
       with:
         name: allure_report
-        path: allure-report/*
+        path: allure-report/index.html
 
   assemble-pyinstaller:
     runs-on: windows-latest
