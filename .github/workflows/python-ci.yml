@@ -29,6 +29,20 @@ jobs:
       run: tox r -e static_analysis
     - name: tox -- run tests
       run: tox r --skip-env "(static_analysis|py312-linting)"
+    - name: generate coverage report
+      run: tox e -e py312-unittest -- coverage html -d coverage
+    - name: upload coverage to artifacts
+      uses: actions/upload-artifact@v4.6.0
+      with:
+        name: coverage_report
+        path: coverage/*
+    - name: generate test report
+      uses: simple-elf/allure-report-action@v1.7
+    - name: upload test report to artifacts
+      uses: actions/upload-artifact@v4.6.0
+      with:
+        name: allure_report
+        path: allure-report/*
 
   assemble-pyinstaller:
     runs-on: windows-latest
@@ -50,3 +64,4 @@ jobs:
       uses: actions/upload-artifact@v4.6.0
       with:
         path: dist/*
+        name: TallyOverlayClient
