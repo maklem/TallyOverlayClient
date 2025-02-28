@@ -36,14 +36,18 @@ jobs:
         name: coverage_report
         path: coverage/*
     - name: install node for allure report
+      if: ${{ always() }}
       uses: actions/setup-node@v4
     - name: install allure commandline
+      if: ${{ always() }}
       run: npm install -g allure-commandline
     - name: generate allure report
+      if: ${{ always() }}
       run: allure generate --clean --single-file
       env:
         ALLURE_NO_ANALYTICS: True
     - name: upload test report to artifacts
+      if: ${{ always() }}
       uses: actions/upload-artifact@v4.6.0
       with:
         name: allure_report
