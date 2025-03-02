@@ -10,6 +10,24 @@ permissions:
   contents: read
 
 jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.12"
+    - name: Install tox
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox
+    - name: tox -- lint
+      run: tox r -e py312-linting
+    - name: tox -- static code analysis
+      run: tox r -e static_analysis
+    - name: tox -- unittest
+      run: tox run --skip-env "(static_analysis|py312-linting)"
   build:
     runs-on: windows-latest
     steps:
