@@ -1,29 +1,41 @@
+import sys
 import tkinter as tk
+
+from typing import Generator
+
 import pytest
 
 from tallyoverlayclient.models import AppDataModel
 from tallyoverlayclient.ui import ConfigFrame, ConfigFrameViewModel, OverlayWindow, OverlayWindowViewModel
 
 
-def can_use_tcl() -> bool:
+def tk_is_available() -> bool:
     try:
-        tk.Tk().destroy()
+        tk.Tk().quit()
         return True
     except tk.TclError:
         return False
 
 
-@pytest.mark.skipif(not can_use_tcl(), reason="Cannot use TCL")
-def test_createConfigFrame() -> None:
+@pytest.fixture
+def tk_root() -> Generator[tk.Tk, None, None]:
     root = tk.Tk()
+    yield root
+    root.quit()
+
+
+@pytest.mark.skipif(not tk_is_available(), reason="Tkinter is not available")
+def test_createConfigFrame(tk_root: tk.Tk) -> None:
     view_model = ConfigFrameViewModel(AppDataModel())
-    frame = ConfigFrame(root, view_model)
+    frame = ConfigFrame(tk_root, view_model)
     assert frame is not None
 
 
-@pytest.mark.skipif(not can_use_tcl(), reason="Cannot use TCL")
-def test_createOverlayWindow() -> None:
-    root = tk.Tk()
+@pytest.mark.skipif(not tk_is_available(), reason="Tkinter is not available")
+@pytest.mark.skipif(
+    sys.platform != "win32", reason="Overlay window uses Windows specific APIs"
+)
+def test_createOverlayWindow(tk_root: tk.Tk) -> None:
     view_model = OverlayWindowViewModel(AppDataModel())
-    overlay = OverlayWindow(root, view_model)
+    overlay = OverlayWindow(tk_root, view_model)
     assert overlay is not None
