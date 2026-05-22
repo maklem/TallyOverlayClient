@@ -2,7 +2,7 @@ import os
 
 package_info = []
 
-with open('requirements.txt', 'r', encoding="utf-16-le") as f:
+with open('requirements.txt', 'r', encoding="utf-8") as f:
     for line in f:
         line = line.strip()
         if line.startswith('#') or len(line) < 4:
@@ -47,6 +47,12 @@ for package in package_info:
             break
         except FileNotFoundError:
             pass
+
+    if 'license' not in package:
+        print(f"No license found for {package['name']}")
+
+package_info = [ p for p in package_info if 'license' in p ]
+
 package_info.append({
     'name': 'tallyoverlayclient',
     'version': '1.0.0',
