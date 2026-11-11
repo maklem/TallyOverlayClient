@@ -6,7 +6,7 @@
 #
 aiohappyeyeballs==2.7.1
     # via aiohttp
-aiohttp==3.14.3
+aiohttp==3.14.4
     # via -r requirements.in
 aiosignal==1.4.0
     # via aiohttp
@@ -42,5 +42,5 @@ typing-extensions==4.16.0
     # via async-tkinter-loop
 wsproto==1.3.2
     # via simple-websocket
-yarl==1.24.5
+yarl==1.25.1
     # via aiohttp
